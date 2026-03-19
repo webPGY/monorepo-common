@@ -11,6 +11,7 @@
 - 🔧 **Monorepo 架构** - 统一管理多个前端项目
 - 💪 **TypeScript** - 完整的类型支持
 - 📝 **代码规范** - ESLint + Prettier
+- 🤖 **Cursor AI** - 内置 `.cursor` Rules、子代理（Agents）与 Skill，便于团队与 AI 协作时口径一致
 
 ## 技术栈
 
@@ -28,6 +29,12 @@
 
 ```
 openclaw-project/
+├── .cursor/                 # Cursor：项目级规则、子代理与技能（见下文「.cursor 目录」）
+│   ├── rules/
+│   │   ├── base/            # 全项目通用规则（语言、结构约定等）
+│   │   └── frontend/        # 前端规则（Vue、TypeScript、Git、文档等）
+│   ├── agents/              # 子代理说明（安全审查、实现验证等）
+│   └── skills/              # Agent Skills（如代码风格）
 ├── packages/
 │   ├── web/                 # 用户端应用
 │   │   ├── src/
@@ -89,20 +96,20 @@ pnpm dev
 
 项目通过根目录的 `.env.*` 文件管理不同环境的配置：
 
-| 文件 | 说明 |
-|------|------|
-| `.env.development` | 开发环境配置 |
-| `.env.production` | 生产环境配置 |
-| `.env*.local` | 本地覆写（已 gitignore） |
+| 文件               | 说明                     |
+| ------------------ | ------------------------ |
+| `.env.development` | 开发环境配置             |
+| `.env.production`  | 生产环境配置             |
+| `.env*.local`      | 本地覆写（已 gitignore） |
 
 **核心变量：**
 
-| 变量 | 说明 | 可选值 |
-|------|------|--------|
-| `NODE_ENV` | 构建模式 | `development` / `production` |
-| `BUILD_TARGET` | 构建目标项目 | `web` / `admin` / `all` |
-| `VITE_API_BASE_URL` | API 基础地址 | 任意 URL |
-| `VITE_APP_TITLE` | 应用标题 | 任意字符串 |
+| 变量                | 说明         | 可选值                       |
+| ------------------- | ------------ | ---------------------------- |
+| `NODE_ENV`          | 构建模式     | `development` / `production` |
+| `BUILD_TARGET`      | 构建目标项目 | `web` / `admin` / `all`      |
+| `VITE_API_BASE_URL` | API 基础地址 | 任意 URL                     |
+| `VITE_APP_TITLE`    | 应用标题     | 任意字符串                   |
 
 > `VITE_` 前缀的变量会自动注入到 Vite 子项目中，可在前端代码通过 `import.meta.env.VITE_*` 访问。
 
@@ -128,11 +135,11 @@ pnpm build:admin:dev    # 开发环境 - 仅 admin
 
 **构建差异：**
 
-| 特性 | development | production |
-|------|-------------|------------|
-| sourcemap | inline | 关闭 |
-| console/debugger | 保留 | 移除 |
-| API 地址 | localhost:8080 | /api |
+| 特性             | development    | production |
+| ---------------- | -------------- | ---------- |
+| sourcemap        | inline         | 关闭       |
+| console/debugger | 保留           | 移除       |
+| API 地址         | localhost:8080 | /api       |
 
 构建产物输出到 `dist/<package>/` 目录。
 
@@ -192,10 +199,10 @@ pipeline {
 
 ### Docker 构建参数
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `BUILD_TARGET` | `all` | 构建目标：`web` / `admin` / `all` |
-| `NODE_ENV` | `production` | 构建环境：`development` / `production` |
+| 参数           | 默认值       | 说明                                   |
+| -------------- | ------------ | -------------------------------------- |
+| `BUILD_TARGET` | `all`        | 构建目标：`web` / `admin` / `all`      |
+| `NODE_ENV`     | `production` | 构建环境：`development` / `production` |
 
 ### Nginx 配置
 
@@ -216,6 +223,37 @@ pnpm format
 ```bash
 pnpm lint
 ```
+
+## .cursor 目录（Cursor AI）
+
+仓库内维护 Cursor 使用的**项目规则**、**子代理**与 **Skill**，与 ESLint/Prettier 互补：前者主要约束 AI 对话与生成代码时的习惯，后者约束构建与提交时的静态检查。
+
+### Rules（`.cursor/rules/`）
+
+| 路径                               | 说明                                                           |
+| ---------------------------------- | -------------------------------------------------------------- |
+| `rules/base/core.mdc`              | 通用规则：中文回复、沿用项目既有风格、精简输出等               |
+| `rules/base/project-structure.mdc` | Monorepo 与业务应用目录约定、命名规范                          |
+| `rules/frontend/general.mdc`       | 技术栈与通用开发原则（Vue 3、Vite、Pinia、Naive UI / Vant 等） |
+| `rules/frontend/vue.mdc`           | Vue 组件与组合式 API 约定                                      |
+| `rules/frontend/typescript.mdc`    | TypeScript 使用约定                                            |
+| `rules/frontend/git.mdc`           | 辅助生成符合规范的 Git 提交信息                                |
+| `rules/frontend/document.mdc`      | 文档与 README 编写规范                                         |
+
+### Agents（`.cursor/agents/`）
+
+| 文件                   | 用途                                              |
+| ---------------------- | ------------------------------------------------- |
+| `security-reviewer.md` | 安全审查子代理：注入、XSS、硬编码密钥、认证授权等 |
+| `verifier-reviewer.md` | 验证子代理：核对实现、跑测试并汇总结果            |
+
+### Skills（`.cursor/skills/`）
+
+| 路径                  | 说明                                                   |
+| --------------------- | ------------------------------------------------------ |
+| `code-style/SKILL.md` | 代码风格 Skill：命名、缩进、注释、与项目既有风格对齐等 |
+
+> 增删或调整上述文件后，建议同步更新本 README 的表格与「项目结构」树状图。
 
 ## 页面功能
 
@@ -342,7 +380,7 @@ dist/
 - 使用 Composition API (`<script setup>`)
 - 使用 TypeScript 类型注解
 - 使用 SCSS 编写样式
-- 遵循 ESLint 和 Prettier 规范
+- 遵循 ESLint 和 Prettier 规范；与 AI 协作时同时参考 `.cursor/rules` 与 `skills/code-style`
 - 组件命名使用 PascalCase
 - 文件命名使用 PascalCase (Vue 组件) 或 camelCase (TS 文件)
 
