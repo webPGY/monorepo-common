@@ -1,13 +1,29 @@
-const inquirer = require('inquirer')
 const chalk = require('chalk')
 const ora = require('ora')
 const execa = require('execa')
 const fs = require('fs')
 const path = require('path')
 
+const ROOT_DIR = path.join(__dirname, '..')
+const ROOT_DIST = path.join(ROOT_DIR, 'dist')
+
+// 解析 .env 文件
+function loadEnvFile(envPath) {
+  if (!fs.existsSync(envPath)) return {}
+  const content = fs.readFileSync(envPath, 'utf-8')
+  const env = {}
+  content.split('\n').forEach(line => {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) return
+    const [key, ...rest] = trimmed.split('=')
+    if (key) env[key.trim()] = rest.join('=').trim()
+  })
+  return env
+}
+
 // 获取 packages 目录下所有的包
 function getPackages() {
-  const packagesDir = path.join(__dirname, '..', 'packages')
+  const packagesDir = path.join(ROOT_DIR, 'packages')
   const packages = fs.readdirSync(packagesDir).filter(dir => {
     const pkgPath = path.join(packagesDir, dir, 'package.json')
     return fs.existsSync(pkgPath)
@@ -24,9 +40,6 @@ function getPackages() {
   })
 }
 
-// 根目录 dist 路径
-const ROOT_DIST = path.join(__dirname, '..', 'dist')
-
 // 清理根目录 dist 下指定子目录
 function cleanDist(packageNames) {
   packageNames.forEach(name => {
@@ -37,76 +50,95 @@ function cleanDist(packageNames) {
   })
 }
 
+// 获取目录大小
+function getDirSize(dirPath) {
+  let size = 0
+  const files = fs.readdirSync(dirPath)
+  files.forEach(file => {
+    const filePath = path.join(dirPath, file)
+    const stats = fs.statSync(filePath)
+    if (stats.isDirectory()) {
+      size += getDirSize(filePath).size
+    } else {
+      size += stats.size
+    }
+  })
+  return { size }
+}
+
+// 格式化字节
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
+}
+
 // 主函数
 async function main() {
+  // 优先从命令行参数获取，其次从环境变量获取
+  const mode = process.env.NODE_ENV || 'production'
+  const buildTarget = process.env.BUILD_TARGET || 'all'
+
+  // 加载对应的 .env 文件（仅作为 fallback，环境变量优先）
+  const envFileName = mode === 'production' ? '.env.production' : '.env.development'
+  const envFile = loadEnvFile(path.join(ROOT_DIR, envFileName))
+  const finalTarget = process.env.BUILD_TARGET || envFile.BUILD_TARGET || 'all'
+
   console.log(chalk.bold.cyan('\n🏗️  OpenClaw Project Builder\n'))
+  console.log(chalk.blue(`   环境: ${mode}`))
+  console.log(chalk.blue(`   目标: ${finalTarget}\n`))
 
-  const packages = getPackages()
+  const allPackages = getPackages()
 
-  if (packages.length === 0) {
+  if (allPackages.length === 0) {
     console.log(chalk.red('❌ 没有找到可用的包'))
     process.exit(1)
   }
 
-  // 交互式选择
-  const answers = await inquirer.prompt([
-    {
-      type: 'checkbox',
-      name: 'selectedPackages',
-      message: '请选择要构建的项目 (空格选择，回车确认):',
-      choices: packages.map(pkg => ({
-        name: `${chalk.cyan(pkg.name)} ${chalk.gray(`(${pkg.path})`)} ${pkg.description ? chalk.yellow(`- ${pkg.description}`) : ''}`,
-        value: pkg.path,
-        short: pkg.name
-      })),
-      pageSize: 10,
-      validate: answer => {
-        if (answer.length < 1) {
-          return '请至少选择一个项目'
-        }
-        return true
-      }
-    },
-    {
-      type: 'list',
-      name: 'buildMode',
-      message: '请选择构建模式:',
-      choices: [
-        { name: '生产环境 (production)', value: 'production' },
-        { name: '开发环境 (development)', value: 'development' }
-      ],
-      default: 'production'
-    }
-  ])
-
-  const selected = answers.selectedPackages
-  const mode = answers.buildMode
-
-  if (selected.length === 0) {
-    console.log(chalk.yellow('\n⚠️  没有选择任何项目'))
-    process.exit(0)
+  // 根据 BUILD_TARGET 筛选要构建的包
+  let selected
+  if (finalTarget === 'all') {
+    selected = allPackages.map(pkg => pkg.path)
+  } else {
+    const targets = finalTarget.split(',').map(t => t.trim())
+    selected = allPackages
+      .filter(pkg => targets.includes(pkg.path) || targets.includes(pkg.name))
+      .map(pkg => pkg.path)
   }
 
-  console.log(chalk.green(`\n✅ 已选择 ${selected.length} 个项目:\n`))
+  if (selected.length === 0) {
+    console.log(chalk.red(`❌ 未找到匹配的构建目标: ${finalTarget}`))
+    console.log(chalk.yellow(`   可用项目: ${allPackages.map(p => p.path).join(', ')}`))
+    process.exit(1)
+  }
+
+  console.log(chalk.green(`✅ 将构建 ${selected.length} 个项目:\n`))
   selected.forEach(pkg => {
     console.log(chalk.white(`  - ${pkg}`))
   })
-  console.log(chalk.blue(`\n🔨 构建模式: ${mode}\n`))
+  console.log()
 
-  // 构建前清理对应的 dist 子目录
   cleanDist(selected)
 
-  // 确保根目录 dist 存在
   if (!fs.existsSync(ROOT_DIST)) {
     fs.mkdirSync(ROOT_DIST, { recursive: true })
   }
 
-  // 构建选中的项目
+  // 收集 .env 文件中 VITE_ 开头的变量，注入到子项目构建中
+  const viteEnv = {}
+  Object.entries(envFile).forEach(([key, value]) => {
+    if (key.startsWith('VITE_')) {
+      viteEnv[key] = value
+    }
+  })
+
   let successCount = 0
   let failCount = 0
 
   for (const pkgPath of selected) {
-    const pkgDir = path.join(__dirname, '..', 'packages', pkgPath)
+    const pkgDir = path.join(ROOT_DIR, 'packages', pkgPath)
     const pkgJson = require(path.join(pkgDir, 'package.json'))
 
     const spinner = ora(`正在构建 ${pkgJson.name}...`).start()
@@ -116,13 +148,16 @@ async function main() {
         cwd: pkgDir,
         stdio: 'pipe',
         shell: true,
-        env: { NODE_ENV: mode }
+        env: {
+          ...process.env,
+          ...viteEnv,
+          NODE_ENV: mode
+        }
       })
 
       spinner.succeed(`构建完成: ${pkgJson.name}`)
       successCount++
 
-      // 输出构建产物信息（产物在根目录 dist/<package> 下）
       const distPath = path.join(ROOT_DIST, pkgPath)
       if (fs.existsSync(distPath)) {
         const stats = getDirSize(distPath)
@@ -136,7 +171,44 @@ async function main() {
     }
   }
 
-  // 输出构建统计
+  // 生成 version.txt 到每个成功构建的子项目 dist 目录
+  if (successCount > 0) {
+    const buildTime = new Date().toLocaleString('zh-CN', {
+      timeZone: 'Asia/Shanghai',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+
+    const rootPkgJson = require(path.join(ROOT_DIR, 'package.json'))
+
+    for (const pkgPath of selected) {
+      const distPath = path.join(ROOT_DIST, pkgPath)
+      if (!fs.existsSync(distPath)) continue
+
+      const pkgDir = path.join(ROOT_DIR, 'packages', pkgPath)
+      const pkgJson = require(path.join(pkgDir, 'package.json'))
+
+      const versionContent = [
+        `project: ${pkgJson.name}`,
+        `version: ${pkgJson.version}`,
+        `environment: ${mode}`,
+        `build_target: ${finalTarget}`,
+        `build_time: ${buildTime}`,
+        `node_env: ${mode}`,
+        `app_version: ${rootPkgJson.version}`
+      ].join('\n') + '\n'
+
+      fs.writeFileSync(path.join(distPath, 'version.txt'), versionContent)
+    }
+
+    console.log(chalk.green('  📄 version.txt 已生成到各产物目录'))
+  }
+
   console.log(chalk.bold.cyan('\n📊 构建统计:\n'))
   console.log(chalk.green(`  ✅ 成功: ${successCount} 个`))
   if (failCount > 0) {
@@ -147,36 +219,6 @@ async function main() {
   if (failCount > 0) {
     process.exit(1)
   }
-}
-
-// 获取目录大小
-function getDirSize(dirPath) {
-  let size = 0
-  const files = fs.readdirSync(dirPath)
-
-  files.forEach(file => {
-    const filePath = path.join(dirPath, file)
-    const stats = fs.statSync(filePath)
-
-    if (stats.isDirectory()) {
-      size += getDirSize(filePath).size
-    } else {
-      size += stats.size
-    }
-  })
-
-  return { size }
-}
-
-// 格式化字节
-function formatBytes(bytes) {
-  if (bytes === 0) return '0 Bytes'
-
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
 }
 
 main().catch(error => {

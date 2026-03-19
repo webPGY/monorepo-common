@@ -51,7 +51,7 @@ async function main() {
   console.log(chalk.gray(`   预览目录: ${previewDir}`))
   console.log(chalk.gray('   按 Ctrl+C 停止服务器\n'))
 
-  await execa('npx', ['serve', previewDir, '-l', port], {
+  await execa('npx', ['serve', previewDir, '-s', '-l', port], {
     stdio: 'inherit',
     shell: true
   })

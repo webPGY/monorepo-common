@@ -4,8 +4,9 @@
 
 ## ✨ 特性
 
-- 🚀 **交互式启动面板** - 可视化选择要启动的项目
-- 📦 **多包构建支持** - 支持选择性地构建多个包
+- 🚀 **多环境构建** - 通过环境变量区分 development / production
+- 📦 **多包构建支持** - 支持按目标项目独立或全量构建
+- 🐳 **Docker 容器化** - 多阶段构建，支持 Jenkins CI/CD 集成
 - 🎨 **SCSS 样式系统** - 完整的变量、混入和全局样式
 - 🔧 **Monorepo 架构** - 统一管理多个前端项目
 - 💪 **TypeScript** - 完整的类型支持
@@ -21,6 +22,7 @@
 - **代码规范**: ESLint + Prettier
 - **包管理**: pnpm
 - **架构**: Monorepo
+- **容器化**: Docker + Nginx
 
 ## 项目结构
 
@@ -30,12 +32,7 @@ openclaw-project/
 │   ├── web/                 # 用户端应用
 │   │   ├── src/
 │   │   │   ├── views/       # 页面组件
-│   │   │   │   ├── Login.vue    # 登录页
-│   │   │   │   └── Register.vue # 注册页
 │   │   │   ├── styles/      # 样式文件
-│   │   │   │   ├── variables.scss # SCSS 变量
-│   │   │   │   ├── mixins.scss    # SCSS 混入
-│   │   │   │   └── global.scss    # 全局样式
 │   │   │   ├── router/      # 路由配置
 │   │   │   ├── App.vue      # 根组件
 │   │   │   └── main.ts      # 入口文件
@@ -45,7 +42,6 @@ openclaw-project/
 │   └── admin/               # 管理后台应用
 │       ├── src/
 │       │   ├── views/       # 页面组件
-│       │   │   └── Dashboard.vue # 控制台
 │       │   ├── styles/      # 样式文件
 │       │   ├── router/      # 路由配置
 │       │   ├── App.vue
@@ -54,12 +50,16 @@ openclaw-project/
 │       ├── vite.config.ts
 │       └── package.json
 ├── scripts/
-│   ├── dev-selector.js      # 开发服务器选择器
-│   └── build-selector.js    # 构建选择器
-├── pnpm-workspace.yaml      # Monorepo 配置
-├── tsconfig.json            # TypeScript 配置
-├── .eslintrc.cjs            # ESLint 配置
-├── .prettierrc              # Prettier 配置
+│   ├── dev-selector.js      # 开发服务器选择器（交互式）
+│   └── build-selector.js    # 构建脚本（环境变量驱动）
+├── docker/
+│   └── nginx.conf           # Nginx 配置
+├── .env.development          # 开发环境变量
+├── .env.production           # 生产环境变量
+├── Dockerfile                # 多阶段 Docker 构建
+├── .dockerignore
+├── pnpm-workspace.yaml       # Monorepo 配置
+├── tsconfig.json             # TypeScript 配置
 └── package.json
 ```
 
@@ -68,7 +68,6 @@ openclaw-project/
 ### 安装依赖
 
 ```bash
-cd E:\openclaw-project
 pnpm install
 ```
 
@@ -78,45 +77,141 @@ pnpm install
 pnpm dev
 ```
 
-**交互式启动面板特性：**
-
-- ✅ 自动扫描 `packages/` 目录下的所有项目
-- ✅ 支持上下键选择项目
-- ✅ 支持空格键多选项目
-- ✅ 支持同时启动多个项目
-- ✅ 彩色终端输出，清晰易读
-
-**操作说明：**
+**交互式启动面板：**
 
 1. 使用 ↑↓ 键移动光标
 2. 按 空格键 选择/取消选择项目
 3. 按 回车键 确认并启动选中的项目
 
-### 构建项目
+## 构建项目
+
+### 环境变量
+
+项目通过根目录的 `.env.*` 文件管理不同环境的配置：
+
+| 文件 | 说明 |
+|------|------|
+| `.env.development` | 开发环境配置 |
+| `.env.production` | 生产环境配置 |
+| `.env*.local` | 本地覆写（已 gitignore） |
+
+**核心变量：**
+
+| 变量 | 说明 | 可选值 |
+|------|------|--------|
+| `NODE_ENV` | 构建模式 | `development` / `production` |
+| `BUILD_TARGET` | 构建目标项目 | `web` / `admin` / `all` |
+| `VITE_API_BASE_URL` | API 基础地址 | 任意 URL |
+| `VITE_APP_TITLE` | 应用标题 | 任意字符串 |
+
+> `VITE_` 前缀的变量会自动注入到 Vite 子项目中，可在前端代码通过 `import.meta.env.VITE_*` 访问。
+
+### 构建命令
 
 ```bash
-# 交互式构建选择
+# 默认构建（读取环境变量或 .env 文件）
 pnpm build
 
-# 构建所有项目
-pnpm build:all
+# 按环境构建全部项目
+pnpm build:dev          # 开发环境 - 全部
+pnpm build:prod         # 生产环境 - 全部
+
+# 按项目构建（生产环境）
+pnpm build:web          # 生产环境 - 仅 web
+pnpm build:admin        # 生产环境 - 仅 admin
+pnpm build:all          # 生产环境 - 全部
+
+# 按项目构建（开发环境）
+pnpm build:web:dev      # 开发环境 - 仅 web
+pnpm build:admin:dev    # 开发环境 - 仅 admin
 ```
 
-**构建选择器特性：**
+**构建差异：**
 
-- ✅ 支持选择性构建单个或多个项目
-- ✅ 支持选择构建模式（生产/开发）
-- ✅ 显示构建进度和统计信息
-- ✅ 输出构建产物大小和路径
-- ✅ 代码分包和压缩优化
+| 特性 | development | production |
+|------|-------------|------------|
+| sourcemap | inline | 关闭 |
+| console/debugger | 保留 | 移除 |
+| API 地址 | localhost:8080 | /api |
 
-### 代码格式化
+构建产物输出到 `dist/<package>/` 目录。
+
+## Docker 部署
+
+项目提供多阶段 Dockerfile，通过 `--build-arg` 参数选择构建环境和目标项目。
+
+### 构建镜像
+
+```bash
+# 构建 web 用户端
+docker build --build-arg BUILD_TARGET=web --build-arg NODE_ENV=production -t openclaw-web .
+
+# 构建 admin 管理后台
+docker build --build-arg BUILD_TARGET=admin --build-arg NODE_ENV=production -t openclaw-admin .
+
+# 构建全部
+docker build --build-arg BUILD_TARGET=all --build-arg NODE_ENV=production -t openclaw-all .
+```
+
+### 运行容器
+
+```bash
+docker run -d -p 80:80 openclaw-all
+```
+
+### Jenkins CI/CD 集成
+
+Dockerfile 的 ARG 参数可直接对接 Jenkins 的参数化构建：
+
+```groovy
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'BUILD_TARGET', choices: ['all', 'web', 'admin'], description: '构建目标')
+        choice(name: 'NODE_ENV', choices: ['production', 'development'], description: '构建环境')
+    }
+    stages {
+        stage('Build') {
+            steps {
+                sh """
+                    docker build \
+                        --build-arg BUILD_TARGET=${params.BUILD_TARGET} \
+                        --build-arg NODE_ENV=${params.NODE_ENV} \
+                        -t openclaw-${params.BUILD_TARGET}:${BUILD_NUMBER} .
+                """
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh "docker run -d -p 80:80 openclaw-${params.BUILD_TARGET}:${BUILD_NUMBER}"
+            }
+        }
+    }
+}
+```
+
+### Docker 构建参数
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `BUILD_TARGET` | `all` | 构建目标：`web` / `admin` / `all` |
+| `NODE_ENV` | `production` | 构建环境：`development` / `production` |
+
+### Nginx 配置
+
+容器内使用 Nginx 提供静态文件服务，默认配置（`docker/nginx.conf`）：
+
+- `/` → web 用户端
+- `/admin` → admin 管理后台
+- `/api/` → 反向代理到后端服务
+
+## 代码格式化
 
 ```bash
 pnpm format
 ```
 
-### 代码检查
+## 代码检查
 
 ```bash
 pnpm lint
