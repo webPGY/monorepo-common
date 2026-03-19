@@ -4,6 +4,7 @@ dist
 *.local
 pnpm-lock.yaml
 .vscode/*
+!.vscode/settings.json
 !.vscode/extensions.json
 .idea
 *.suo

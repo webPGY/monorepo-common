@@ -1,11 +1,18 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { compression } from 'vite-plugin-compression2'
 import { fileURLToPath, URL } from 'node:url'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   base: './',
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    compression({
+      algorithms: ['gzip'],
+      threshold: 10240,
+      deleteOriginalAssets: false
+    })
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -21,12 +28,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: false, // 关闭自动打开，由 dev-selector 控制
+    open: false,
     host: true,
-    // 热更新
-    hmr: {
-      overlay: true
-    }
+    hmr: { overlay: true }
   },
   esbuild: {
     drop: ['console', 'debugger']
@@ -36,6 +40,9 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     minify: 'esbuild',
+    cssMinify: 'esbuild',
+    target: 'es2015',
+    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
         chunkFileNames: 'assets/js/[name]-[hash].js',

@@ -1,6 +1,6 @@
 # OpenClaw Project
 
-基于 Vue 3 + Naive UI + Vite + TypeScript 的 Monorepo 前端脚手架工程
+基于 Vue 3 + Naive UI + Vite + TypeScript + eslint + husky 的 Monorepo 前端脚手架工程
 
 ## ✨ 特性
 
@@ -79,6 +79,7 @@ pnpm dev
 ```
 
 **交互式启动面板特性：**
+
 - ✅ 自动扫描 `packages/` 目录下的所有项目
 - ✅ 支持上下键选择项目
 - ✅ 支持空格键多选项目
@@ -86,6 +87,7 @@ pnpm dev
 - ✅ 彩色终端输出，清晰易读
 
 **操作说明：**
+
 1. 使用 ↑↓ 键移动光标
 2. 按 空格键 选择/取消选择项目
 3. 按 回车键 确认并启动选中的项目
@@ -101,6 +103,7 @@ pnpm build:all
 ```
 
 **构建选择器特性：**
+
 - ✅ 支持选择性构建单个或多个项目
 - ✅ 支持选择构建模式（生产/开发）
 - ✅ 显示构建进度和统计信息
@@ -124,6 +127,7 @@ pnpm lint
 ### 用户端 (@openclaw/web)
 
 #### 登录页 (Login.vue)
+
 - 用户名/密码登录
 - 验证码功能
 - 记住密码
@@ -132,6 +136,7 @@ pnpm lint
 - 响应式设计
 
 #### 注册页 (Register.vue)
+
 - 用户名/邮箱/手机号注册
 - 密码确认验证
 - 用户协议勾选
@@ -142,6 +147,7 @@ pnpm lint
 ### 管理后台 (@openclaw/admin)
 
 #### 控制台 (Dashboard.vue)
+
 - 数据统计卡片
 - 用户数统计
 - 访问量统计
@@ -194,7 +200,7 @@ $border-radius-base: 8px;
   @include flex-center;
   background: $gradient-primary;
   padding: $spacing-xl;
-  
+
   .title {
     color: $text-primary;
     font-size: $font-size-xl;

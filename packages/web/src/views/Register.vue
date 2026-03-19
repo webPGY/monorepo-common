@@ -67,7 +67,7 @@
         </n-form-item>
 
         <n-form-item>
-          <n-button type="primary" block @click="handleRegister" :loading="loading">
+          <n-button type="primary" block :loading="loading" @click="handleRegister">
             注册
           </n-button>
         </n-form-item>

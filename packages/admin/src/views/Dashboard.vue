@@ -52,7 +52,12 @@
 </template>
 
 <script setup lang="ts">
-import { PeopleOutline, EyeOutline, TrendingUpOutline, NotificationsOutline } from '@vicons/ionicons5'
+import {
+  PeopleOutline,
+  EyeOutline,
+  TrendingUpOutline,
+  NotificationsOutline
+} from '@vicons/ionicons5'
 </script>
 
 <style lang="scss" scoped>
