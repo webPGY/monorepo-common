@@ -1,0 +1,51 @@
+---
+description: 项目前端代码结构规范
+globs:
+alwaysApply: true
+---
+
+# 项目结构规范
+
+## 顶层结构
+
+- apps/ // 多应用目录，如 saas-console
+- packages/ // 复用组件包与工具库
+- .cursor/rules/ // 代码规范相关规则文件
+- node_modules/ // 依赖库
+- public/ // 静态资源
+- docs/ // 项目文档
+- scripts/ // 自动化脚本
+- vite.config.ts // Vite 配置文件
+- package.json // 项目依赖及脚本
+- README.md // 项目介绍及基础信息
+
+## 业务应用(如 apps/saas-console) 目录结构
+
+- src/
+  - api/ // 所有前端 API 封装
+  - assets/ // 静态资源（图片、字体等）
+  - components/ // 公共业务组件
+  - directives/ // 自定义指令
+  - hooks/ // 组合式函数
+  - locales/ // 国际化资源
+  - router/ // 路由配置
+  - store/ // 状态管理（如 pinia modules）
+  - themes/ // 主题与样式变量
+  - utils/ // 通用工具函数
+  - views/ // 页面视图
+  - App.vue // 入口 Vue 组件
+  - main.ts // 入口文件
+
+## 命名规范
+
+- 组件相关：文件夹与文件名使用 PascalCase
+- 其它目录、文件：采用 kebab-case
+
+## 复用组件开发
+
+- 推荐集中维护于 packages/kuailu-common-components 下的 components/ 子目录
+
+## 工具函数
+
+- vue 指令统一放入 src/directives
+- 组合式函数统一放入 src/hooks
