@@ -1,0 +1,56 @@
+// 全局 SCSS 变量
+
+// 颜色系统
+$primary-color: #1890ff;
+$success-color: #52c41a;
+$warning-color: #faad14;
+$error-color: #f5222d;
+$info-color: #13c2c2;
+
+// 文本颜色
+$text-primary: #333333;
+$text-secondary: #666666;
+$text-tertiary: #999999;
+
+// 背景颜色
+$bg-primary: #ffffff;
+$bg-secondary: #f0f2f5;
+$bg-tertiary: #fafafa;
+
+// 字体大小
+$font-size-xs: 12px;
+$font-size-sm: 13px;
+$font-size-base: 14px;
+$font-size-lg: 16px;
+$font-size-xl: 18px;
+
+// 圆角
+$border-radius-sm: 4px;
+$border-radius-base: 8px;
+
+// 阴影
+$box-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+// 间距
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-base: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 20px;
+$spacing-xxl: 24px;
+
+// 过渡动画
+$transition-base: all 0.3s ease;
+
+// 混入
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

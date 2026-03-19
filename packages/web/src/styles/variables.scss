@@ -1,0 +1,63 @@
+// 全局 SCSS 变量
+
+// 颜色系统
+$primary-color: #667eea;
+$success-color: #52c41a;
+$warning-color: #faad14;
+$error-color: #f5222d;
+$info-color: #1890ff;
+
+// 文本颜色
+$text-primary: #333333;
+$text-secondary: #666666;
+$text-tertiary: #999999;
+$text-disabled: #c0c0c0;
+
+// 背景颜色
+$bg-primary: #ffffff;
+$bg-secondary: #f5f7fa;
+$bg-tertiary: #e8e8e8;
+
+// 边框颜色
+$border-color: #d9d9d9;
+$border-color-light: #f0f0f0;
+
+// 字体大小
+$font-size-xs: 12px;
+$font-size-sm: 13px;
+$font-size-base: 14px;
+$font-size-lg: 16px;
+$font-size-xl: 18px;
+$font-size-xxl: 20px;
+
+// 圆角
+$border-radius-sm: 4px;
+$border-radius-base: 8px;
+$border-radius-lg: 12px;
+
+// 阴影
+$box-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+$box-shadow-base: 0 4px 12px rgba(0, 0, 0, 0.1);
+$box-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+// 间距
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-base: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 20px;
+$spacing-xxl: 24px;
+
+// 渐变色
+$gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$gradient-secondary: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+// 过渡动画
+$transition-base: all 0.3s ease;
+$transition-fast: all 0.2s ease;
+
+// z-index 层级
+$zindex-dropdown: 1000;
+$zindex-modal: 1050;
+$zindex-popover: 1060;
+$zindex-tooltip: 1070;

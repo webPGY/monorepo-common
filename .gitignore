@@ -1,0 +1,13 @@
+node_modules
+dist
+.DS_Store
+*.local
+pnpm-lock.yaml
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
