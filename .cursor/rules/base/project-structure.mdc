@@ -4,13 +4,17 @@ globs:
 alwaysApply: true
 ---
 
+# 结构演化注意事项
+
+- 若结构有调整需同步更新本文件，并在团队内说明规范变更。
+- 目录变更同步检查引入路径，确保不影响现有功能与构建。
+
 # 项目结构规范
 
 ## 顶层结构
 
-- apps/ // 多应用目录，如 saas-console
-- packages/ // 复用组件包与工具库
-- widgets/ // 可独立发布的 NPM 包（workspace 成员，由 packages 通过包名引用）
+- packages/ // 多应用目录，如 web
+- widgets/ // 复用组件包与工具库，可独立发布的 NPM 包（workspace 成员，由 packages 通过包名引用）
 - .cursor/rules/ // 代码规范相关规则文件
 - node_modules/ // 依赖库
 - public/ // 静态资源
@@ -44,7 +48,7 @@ alwaysApply: true
 
 ## 复用组件开发
 
-- 推荐集中维护于 packages/kuailu-common-components 下的 components/ 子目录
+- 推荐集中维护于 widgets/openclaw-components 下的 components/ 子目录
 
 ## 工具函数
 
