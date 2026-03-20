@@ -4,8 +4,11 @@ import { compression } from 'vite-plugin-compression2'
 import { fileURLToPath, URL } from 'node:url'
 import path from 'node:path'
 
+/** 与根目录 pnpm-workspace 中的 widgets 等包通过软链引用时，需允许读取仓库根路径 */
+const monorepoRoot = path.resolve(__dirname, '../..')
+
 export default defineConfig(({ mode }) => {
-  const rootEnv = loadEnv(mode, path.resolve(__dirname, '../..'), '')
+  const rootEnv = loadEnv(mode, monorepoRoot, '')
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
@@ -35,7 +38,10 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       open: false,
       host: true,
-      hmr: { overlay: true }
+      hmr: { overlay: true },
+      fs: {
+        allow: [monorepoRoot]
+      }
     },
     esbuild: {
       drop: mode === 'production' ? ['console', 'debugger'] : []

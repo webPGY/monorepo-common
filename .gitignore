@@ -6,7 +6,7 @@ widgets/**/.npmrc
 .DS_Store
 *.local
 .env*.local
-pnpm-lock.yaml
+# pnpm-lock.yaml
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
