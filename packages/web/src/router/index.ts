@@ -1,5 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -17,6 +16,12 @@ const routes: RouteRecordRaw[] = [
     name: 'Register',
     component: () => import('@/views/Register.vue'),
     meta: { title: '注册' }
+  },
+  {
+    path: '/widget-demo',
+    name: 'WidgetDemo',
+    component: () => import('@/views/WidgetDemoTest.vue'),
+    meta: { title: 'widgets 组件演示' }
   }
 ]
 

@@ -1,0 +1,45 @@
+{
+  "name": "@webPGY/openclaw-components",
+  "version": "1.0.2",
+  "description": "OpenClaw 共享组件库（widgets）",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webPGY/monorepo-common.git",
+    "directory": "widgets/openclaw-components"
+  },
+  "type": "module",
+  "private": false,
+  "main": "./dist/index.es.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "vue-tsc --declaration --emitDeclarationOnly && vite build",
+    "prepublishOnly": "pnpm run build",
+    "preview": "vite preview"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "^5.4.2",
+    "vue": "^3.4.21",
+    "vue-tsc": "^2.0.6",
+    "vite": "^5.1.6"
+  }
+}

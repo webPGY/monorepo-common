@@ -1,5 +1,8 @@
 node_modules
 dist
+
+# widgets 本地 npm 认证（含 GitHub Packages token，禁止提交）
+widgets/**/.npmrc
 .DS_Store
 *.local
 .env*.local

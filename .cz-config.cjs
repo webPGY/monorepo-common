@@ -15,6 +15,7 @@ module.exports = {
   scopes: [
     { name: 'web' },
     { name: 'admin' },
+    { name: 'widgets' },
     { name: 'root' },
     { name: 'scripts' },
     { name: 'config' }
