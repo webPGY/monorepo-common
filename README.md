@@ -35,6 +35,7 @@ openclaw-project/
 │   │   └── frontend/        # 前端规则（Vue、TypeScript、Git、文档等）
 │   ├── agents/              # 子代理说明（安全审查、实现验证等）
 │   └── skills/              # Agent Skills（如代码风格）
+├── widgets/                 # 可独立发布的 NPM 包（workspace，详见 widgets/README.md）
 ├── packages/
 │   ├── web/                 # 用户端应用
 │   │   ├── src/
@@ -142,6 +143,12 @@ pnpm build:admin:dev    # 开发环境 - 仅 admin
 | API 地址         | localhost:8080 | /api       |
 
 构建产物输出到 `dist/<package>/` 目录。
+
+## widgets 与 GitHub Packages
+
+- 发布：`pnpm publish:widgets`（详见 [`widgets/README.md`](widgets/README.md)）。
+- **包会出现在与 npm scope 一致的 GitHub 用户/组织的 Packages 页**（例如 `@webPGY/...` 对应 `webPGY`），不一定自动出现在某个仓库侧栏。
+- **若要在本仓库首页看到 Packages**：请在对应 widget 的 `package.json` 中配置 `repository`（monorepo 建议同时设置 `repository.directory`）。示例见 `widgets/openclaw-components/package.json`。
 
 ## Docker 部署
 

@@ -10,6 +10,7 @@ alwaysApply: true
 
 - apps/ // 多应用目录，如 saas-console
 - packages/ // 复用组件包与工具库
+- widgets/ // 可独立发布的 NPM 包（workspace 成员，由 packages 通过包名引用）
 - .cursor/rules/ // 代码规范相关规则文件
 - node_modules/ // 依赖库
 - public/ // 静态资源

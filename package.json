@@ -14,8 +14,9 @@
     "build:admin:dev": "cross-env NODE_ENV=development BUILD_TARGET=admin node scripts/build-selector.js",
     "build:all": "cross-env NODE_ENV=production BUILD_TARGET=all node scripts/build-selector.js",
     "preview": "node scripts/preview-selector.js",
-    "lint": "eslint packages",
-    "format": "prettier --write \"packages/**/*.{js,ts,vue,json,css,scss,md}\"",
+    "lint": "eslint packages widgets",
+    "publish:widgets": "node scripts/publish-widgets.js",
+    "format": "prettier --write \"packages/**/*.{js,ts,vue,json,css,scss,md}\" \"widgets/**/*.{js,ts,vue,json,css,scss,md}\"",
     "commit": "git-cz",
     "prepare": "husky"
   },
@@ -29,6 +30,9 @@
   },
   "lint-staged": {
     "packages/**/*.{js,ts,vue}": [
+      "eslint --fix"
+    ],
+    "widgets/**/*.{js,ts,vue}": [
       "eslint --fix"
     ],
     "packages/**/*.{js,ts,vue,json,css,scss,md}": [
